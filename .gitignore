@@ -1,0 +1,32 @@
+# Environment files
+.env
+uploader.env
+.env.backup
+
+# Node modules
+node_modules/
+
+# Output directories
+output/
+temp/
+audio/
+images/
+videos/
+outro-videos/
+
+# Build files
+*.log
+*.lock
+
+# Database files
+*.sqlite
+*.db
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Virtual environment files
+.venv
+venv
+

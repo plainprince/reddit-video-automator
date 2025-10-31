@@ -1,0 +1,41 @@
+{
+  "name": "vidit",
+  "version": "1.0.0",
+  "description": "An automatic Reddit story to video generator.",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "vidit": "index.js"
+  },
+  "scripts": {
+    "vidit": "bun index.js",
+    "start": "cd gui && bun start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@huggingface/inference": "^4.5.3",
+    "bcrypt": "^6.0.0",
+    "canvas": "^3.1.2",
+    "cors": "^2.8.5",
+    "croner": "^9.0.0",
+    "dotenv": "^17.2.1",
+    "edge-tts": "^1.0.1",
+    "elevenlabs-node": "^2.0.3",
+    "express": "^5.1.0",
+    "figlet": "^1.8.2",
+    "googleapis": "^144.0.0",
+    "gradient-string": "^3.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^3.3.2",
+    "node-gtts": "^2.0.2",
+    "ollama": "^0.5.16",
+    "openai": "^5.10.2",
+    "say.js": "^1.4.0",
+    "sqlite3": "^5.1.7",
+    "yargs": "^18.0.0",
+    "yoctocolors": "^2.1.2",
+    "youtube-dl-wrap": "^2.1.1"
+  }
+}
