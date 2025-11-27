@@ -349,7 +349,7 @@ async function main() {
     console.log(c.cyan(`\n${icons.clock} YouTube Uploader - Daily Automation`));
     console.log(c.green(`${icons.check} Scheduled to run daily at 10:00\n`));
 
-    const job = Cron('0 10 * * *', {
+    const job = new Cron('0 10 * * *', {
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
     }, async () => {
         try {
