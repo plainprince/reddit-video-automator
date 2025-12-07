@@ -179,8 +179,9 @@ This will:
 1. Clean the output folder
 2. Generate 3 Reddit videos
 3. Generate 3 TIL videos
-4. Generate 1 Today video
-5. Upload all 7 videos to YouTube
+4. Generate 3 AITA videos
+5. Generate 1 Today video
+6. Upload all 10 videos to YouTube
 
 ### Start Daily Automation
 
@@ -213,6 +214,30 @@ pm2 save
 # Setup pm2 to start on system boot
 pm2 startup
 ```
+
+## Additional Options
+
+### Open YouTube Studio After Upload
+
+To automatically open YouTube Studio edit pages after upload (useful for manual adjustments):
+
+```bash
+bun uploader.js --run-once --open-studio
+```
+
+This will:
+- Open each video's edit page in your default browser after upload
+- Save all Studio URLs to `output/studio-urls.txt` for later reference
+
+### Set Altered Content Flag
+
+If your videos contain realistic altered or synthetic media:
+
+```bash
+bun uploader.js --run-once --altered-content
+```
+
+This sets `containsSyntheticMedia: true` for all uploaded videos. By default, it's set to `false`.
 
 ## Troubleshooting
 
@@ -311,8 +336,50 @@ Each uploaded video will have:
 - **Category**: Entertainment
 - **Privacy**: Public
 - **Made for Kids**: No (not made for kids)
+- **Contains Synthetic Media**: No (by default)
 
 The video index (`n`) automatically increments after each successful upload and is saved to `uploader.env`.
+
+## Altered Content / Synthetic Media
+
+YouTube requires creators to disclose when content contains realistic altered or synthetic media. The uploader sets `containsSyntheticMedia` to `false` by default, which is appropriate for content that:
+
+- Uses AI for generation but doesn't make real people appear to say/do things they didn't
+- Uses AI for narration over game footage or generic backgrounds
+- Is clearly synthetic/animated and not intended to deceive
+
+### Setting Altered Content Flag
+
+By default, videos are marked as NOT containing synthetic media:
+
+```bash
+bun uploader.js --run-once
+# Uploads with containsSyntheticMedia: false
+```
+
+If your content DOES contain realistic altered or synthetic media (e.g., deepfakes, altered footage of real people/events), set the flag:
+
+```bash
+bun uploader.js --run-once --altered-content
+# Uploads with containsSyntheticMedia: true
+```
+
+### What Qualifies as Altered/Synthetic Content?
+
+According to YouTube's guidelines, you should set `--altered-content` if your video:
+
+- Makes a real person appear to say or do something they didn't
+- Alters footage of a real event or place
+- Generates a realistic-looking scene that didn't actually occur
+
+You do NOT need to set this flag if:
+
+- You use AI for narration (text-to-speech)
+- You use AI to generate scripts or text
+- The content is clearly synthetic/animated (not intended to be realistic)
+- You're using generic background footage
+
+For most Reddit story videos with AI narration, the default (`false`) is correct.
 
 ## Security Notes
 

@@ -37,6 +37,15 @@ const argv = yargs(hideBin(process.argv))
         type: 'boolean',
         description: 'Generate and upload videos once, then exit (skip cron scheduling)',
     })
+    .option('open-studio', {
+        type: 'boolean',
+        description: 'Open YouTube Studio edit page after each upload for manual settings',
+    })
+    .option('altered-content', {
+        type: 'boolean',
+        description: 'Set to true if video contains realistic altered or synthetic content',
+        default: false,
+    })
     .help()
     .argv;
 
@@ -171,6 +180,7 @@ async function uploadVideo(oauth2Client, videoPath, title, description, env) {
                 status: {
                     privacyStatus: 'public',
                     selfDeclaredMadeForKids: false,
+                    containsSyntheticMedia: argv.alteredContent,
                 },
             },
             media: {
@@ -178,9 +188,25 @@ async function uploadVideo(oauth2Client, videoPath, title, description, env) {
             },
         });
 
+        const videoId = response.data.id;
+        const watchUrl = `https://www.youtube.com/watch?v=${videoId}`;
+        const studioUrl = `https://studio.youtube.com/video/${videoId}/edit`;
+
         console.log(c.green(`${icons.check} Uploaded successfully!`));
-        console.log(c.dim(`   Video ID: ${response.data.id}`));
-        console.log(c.dim(`   URL: https://www.youtube.com/watch?v=${response.data.id}\n`));
+        console.log(c.dim(`   Video ID: ${videoId}`));
+        console.log(c.dim(`   URL: ${watchUrl}`));
+        console.log(c.dim(`   Studio: ${studioUrl}`));
+        console.log(c.dim(`   Synthetic Media: ${argv.alteredContent ? 'Yes' : 'No'}`));
+
+        // Open YouTube Studio if requested
+        if (argv.openStudio) {
+            console.log(c.cyan(`${icons.info} Opening YouTube Studio...\n`));
+            try {
+                await $`open ${studioUrl}`.quiet();
+            } catch (error) {
+                console.log(c.yellow(`${icons.warning} Could not auto-open browser. Please open manually:\n${studioUrl}\n`));
+            }
+        }
 
         return response.data;
     } catch (error) {
@@ -280,6 +306,7 @@ async function uploadWorkflow(uploadOnly = false) {
     let currentIndex = env.videoIndex;
     const uploadedVideos = [];
     const failedVideos = [];
+    const studioUrls = [];
 
     // Upload each video
     for (const videoPath of videoFiles) {
@@ -291,8 +318,12 @@ async function uploadWorkflow(uploadOnly = false) {
 
         while (retries > 0 && !uploaded) {
             try {
-                await uploadVideo(oauth2Client, videoPath, title, description, env);
-                uploadedVideos.push({ path: videoPath, index: currentIndex });
+                const result = await uploadVideo(oauth2Client, videoPath, title, description, env);
+                const videoId = result.id;
+                const studioUrl = `https://studio.youtube.com/video/${videoId}/edit`;
+                
+                uploadedVideos.push({ path: videoPath, index: currentIndex, videoId });
+                studioUrls.push(studioUrl);
                 
                 // Increment index and save immediately after successful upload
                 currentIndex++;
@@ -330,7 +361,21 @@ async function uploadWorkflow(uploadOnly = false) {
         });
     }
 
-    console.log(c.cyan(`${icons.arrow} Next video index: ${currentIndex}\n`));
+    console.log(c.cyan(`${icons.arrow} Next video index: ${currentIndex}`));
+
+    // Save Studio URLs to file for easy access
+    if (studioUrls.length > 0 && argv.openStudio) {
+        const urlsFile = path.join(OUTPUT_DIR, 'studio-urls.txt');
+        const urlsContent = studioUrls.map((url, i) => {
+            const video = uploadedVideos[i];
+            return `Video ${video.index} (${video.videoId}):\n${url}\n`;
+        }).join('\n');
+        
+        fs.writeFileSync(urlsFile, urlsContent);
+        console.log(c.cyan(`\n${icons.info} YouTube Studio URLs saved to: ${urlsFile}`));
+    }
+
+    console.log('');
 }
 
 // Main function
